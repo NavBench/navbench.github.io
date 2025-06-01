@@ -94,30 +94,21 @@
     }
     .options {
       margin-top: 1em;
-    }
-    @media (max-width: 900px) {
-      .local-examples > div {
-        flex-direction: column !important;
-        align-items: stretch !important;
-      }
-      .local-example {
-        max-width: 100% !important;
-        margin: 1em 0.2em;
-      }
-      .local-row {
-        flex-direction: column !important;
-        gap: 1em !important;
-      }
-    }
-    .local-img {
-      height: 110px;
-      object-fit: cover;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
       width: 100%;
-      border-radius: 6px;
-      background: #eee;
+    }
+    .options > div {
+      flex: 1 1 0;
+      max-width: 110px;
+      min-width: 0;
+      text-align: center;
     }
     .options img {
       height: 100px;
+      max-width: 90px;
+      width: 100%;
       object-fit: cover;
       border-radius: 5px;
       background: #eee;
@@ -130,6 +121,15 @@
       background: #eee;
     }
     .temporal-img {
+      height: 110px;
+      object-fit: cover;
+      width: 100%;
+      border-radius: 6px;
+      background: #eee;
+    }
+    .local-img,
+    .local1-current-img,
+    .local1-direction-img {
       height: 110px;
       object-fit: cover;
       width: 100%;
@@ -154,7 +154,7 @@
     </p>
     <div class="links" style="margin-top: 1em;">
       <a href="#" class="nav-link">arXiv</a>
-      <a href="#" class="nav-link">GitHub</a>
+      <a href="https://github.com/NavBench/Evaluation_Code" class="nav-link" target="_blank">GitHub</a>
       <a href="#" class="nav-link">Hugging Face</a>
     </div>
   </header>
@@ -316,11 +316,11 @@
           </div>
           <div class="local-row" style="display: flex; gap: 2em;">
             <div style="flex:1; text-align:center;">
-              <img src="assets/local1/current.png" class="local-img" alt="Current View">
+              <img src="assets/local1/current.png" class="local-img local1-current-img" alt="Current View">
               <div style="font-size: 0.85em; color: #888; margin-top: 0.2em;">Current View</div>
             </div>
             <div style="flex:1; text-align:center;">
-              <img src="assets/local1/direction.png" class="local-img" alt="Direction">
+              <img src="assets/local1/direction.png" class="local-img local1-direction-img" alt="Direction">
               <div style="font-size: 0.85em; color: #888; margin-top: 0.2em;">Direction</div>
             </div>
           </div>
