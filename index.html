@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NavBench</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .nav-link {
+      display: inline-block;
+      margin: 0 1em;
+      color: #ddd;
+      font-weight: bold;
+      font-size: 0.95em;
+    }
+    .nav-link:hover {
+      color: white;
+    }
+    .options button {
+      display: block;
+      margin: 0.5em 0;
+      padding: 0.75em 1em;
+      text-align: left;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      font-size: 0.95em;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s, border 0.3s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .options button:hover {
+      background: #eef;
+    }
+    .options button.correct {
+      background: #d4edda;
+      border-color: #28a745;
+    }
+    .options button.incorrect {
+      background: #f8d7da;
+      border-color: #dc3545;
+    }
+    .feedback {
+      min-height: 1.5em;
+      font-weight: bold;
+    }
+    .trajectory {
+      position: relative;
+    }
+    .end-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 1em 2em;
+      border-radius: 5px;
+      font-size: 1.2em;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .end-overlay.show {
+      opacity: 1;
+    }
+    @media (max-width: 900px) {
+      .examples > div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      .example {
+        max-width: 100% !important;
+      }
+    }
+    .local-examples {
+      margin-bottom: 2em;
+    }
+    .local-example {
+      max-width: 480px !important;
+      background: #fafbfc;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 1.2em 1em 1.5em 1em;
+      margin: 1.5em 1em;
+    }
+    .local-row {
+      display: flex;
+      gap: 2.5em;
+      justify-content: center;
+      margin-bottom: 1em;
+    }
+    .options {
+      margin-top: 1em;
+    }
+    @media (max-width: 900px) {
+      .local-examples > div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      .local-example {
+        max-width: 100% !important;
+        margin: 1em 0.2em;
+      }
+      .local-row {
+        flex-direction: column !important;
+        gap: 1em !important;
+      }
+    }
+    .local-img {
+      height: 110px;
+      object-fit: cover;
+      width: 100%;
+      border-radius: 6px;
+      background: #eee;
+    }
+    .options img {
+      height: 100px;
+      object-fit: cover;
+      border-radius: 5px;
+      background: #eee;
+    }
+    .trajectory img {
+      height: 110px;
+      object-fit: cover;
+      width: 100%;
+      border-radius: 6px;
+      background: #eee;
+    }
+    .temporal-img {
+      height: 110px;
+      object-fit: cover;
+      width: 100%;
+      border-radius: 6px;
+      background: #eee;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NavBench: Probing Multimodal Large Language Models for Embodied Navigation</h1>
+    <p class="authors" style="margin-top: 0.5em;">
+      Yanyuan Qiao<sup>1</sup>, Haodong Hong<sup>2,3</sup>, Wenqi Lyu<sup>1</sup>, Dong An<sup>4</sup>, Siqi Zhang<sup>5</sup>,
+      Yutong Xie<sup>4</sup>, Xinyu Wang<sup>1</sup>, Qi Wu<sup>1*</sup>
+    </p>
+    <p class="affiliations">
+      <sup>1</sup>The University of Adelaide &nbsp;&nbsp;
+      <sup>2</sup>The University of Queensland &nbsp;&nbsp;
+      <sup>3</sup>CSIRO Data61 &nbsp;&nbsp;
+      <sup>4</sup>Mohamed bin Zayed University of Artificial Intelligence (MBZUAI) &nbsp;&nbsp;
+      <sup>5</sup>Tongji University
+    </p>
+    <div class="links" style="margin-top: 1em;">
+      <a href="#" class="nav-link">arXiv</a>
+      <a href="#" class="nav-link">GitHub</a>
+      <a href="#" class="nav-link">Hugging Face</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="teaser">
+      <img src="assets/teaser.png" alt="NavBench teaser figure">
+      <p style="max-width: 900px; margin: 1em auto 0; padding: 0 1em; font-size: 1em; color: #444; text-align: center;">
+        NavBench evaluates MLLMs across three comprehension tasks and a step-by-step execution task, assessing their ability to understand navigation behavior, track progress, reason about observation and action, and act accordingly. The step-by-step navigation is assessed from different difficulty levels, which is defined by cognitive, spatial, and execution complexity.
+      </p>
+    </section>
+
+    <section class="abstract">
+      <h3>Abstract</h3>
+      <p style="text-align: justify;">
+        Multimodal Large Language Models (MLLMs) have demonstrated strong generalization in vision-language tasks,
+        yet their ability to understand and act within embodied environments remains underexplored. We present NavBench,
+        a benchmark to evaluate the embodied navigation capabilities of MLLMs under zero-shot settings. NavBench consists
+        of two components: (1) navigation comprehension, assessed through three cognitively grounded tasks including global
+        instruction alignment, temporal progress estimation, and local observation-action reasoning, covering 3,200
+        question-answer pairs; and (2) step-by-step execution in 432 episodes across 72 indoor scenes, stratified by spatial,
+        cognitive, and execution complexity. To support real-world deployment, we introduce a pipeline that converts MLLMs'
+        outputs into robotic actions. We evaluate both proprietary and open-source models, finding that GPT-4o performs well
+        across tasks, while lighter open-source models succeed in simpler cases. Results also show that models with higher
+        comprehension scores tend to achieve better execution performance. Providing map-based context improves decision
+        accuracy, especially in medium-difficulty scenarios. However, most models struggle with temporal understanding,
+        particularly in estimating progress during navigation, which may pose a key challenge.
+      </p>
+    </section>
+
+    <section class="pipeline">
+      <img src="assets/collection.png" alt="NavBench construction pipeline and statistics">
+      <p style="max-width: 900px; margin: 1em auto 0; padding: 0 1em; font-size: 1em; color: #444; text-align: center;">
+        <strong>NavBench construction pipeline and statistics.</strong><br>
+        (a) QA generation for comprehension tasks at global, progress, and local levels.<br>
+        (b) Execution pipeline combining automatic difficulty scoring and human ratings.<br>
+        (c) Benchmark statistics, including comprehension (comp.) task distribution, QA counts, and execution statistics (e.g., instruction length, steps, distance).
+      </p>
+    </section>
+
+    <section class="examples">
+      <h3>Global Instruction Alignment Examples</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 2em; justify-content: center;">
+        <!-- Example 1 -->
+        <div class="example" style="flex: 1 1 300px; max-width: 380px;">
+          <h4>Example 1</h4>
+          <div class="trajectory">
+            <img id="global1-img" src="assets/global1/frame1.png" width="100%" alt="Example 1 trajectory">
+          </div>
+          <p style="text-align: justify; font-size: 0.95em;">
+            You are presented with a sequence of panoramic views that represent a navigation path from the starting point
+            to the goal location. Identify the correct instruction.
+          </p>
+          <div class="options global1-options">
+            <button onclick="checkAnswer('E','global1','A')" data-choice="A">
+              A. Enter the bottom floor through the rose colored carpet on the left. Make a hard left just before the map picture. Make a right opposite a familyroom on the far wall to the left. Walk past the windows on the left. Wait in the threshold of the small corner to the left of the wooden beam.
+            </button>
+            <button onclick="checkAnswer('E','global1','B')" data-choice="B">
+              B. Enter the tan door through gym on the left. Make a hard left just before the tile mosaic. Make a right opposite on pool platform on the large table to the left. Walk past the right and large windows on the left. Wait in the threshold of potted plant to the left of the leftmost archway.
+            </button>
+            <button onclick="checkAnswer('E','global1','C')" data-choice="C">
+              C. Enter two book stands through the red carpet on the left. Make a hard left just before the stools. Make a right opposite the corridor on stair landing to the left. Walk past the first set of stairs on the left. Wait in the threshold of the light switch to the left of the wooden chair.
+            </button>
+            <button onclick="checkAnswer('E','global1','D')" data-choice="D">
+              D. Enter the purple sofa through another room on the left. Make a hard left just before a double sink. Make a right opposite cross on library area on the left to the left. Walk past 3 more steps on the left. Wait in the threshold of library area to the left of a big starburst tile.
+            </button>
+            <button onclick="checkAnswer('E','global1','E')" data-choice="E">
+              E. Enter the house through the open french doors on the left. Make a hard left just before the bed. Make a right opposite the thermostat on the wall to the left. Walk past the console table on the left. Wait in the threshold of the door to the left of the linen cupboard.
+            </button>
+          </div>
+          <p id="global1-feedback" class="feedback"></p>
+        </div>
+
+        <!-- Example 2 -->
+        <div class="example" style="flex: 1 1 300px; max-width: 380px;">
+          <h4>Example 2</h4>
+          <div class="trajectory">
+            <img id="global2-img" src="assets/global2/frame1.jpg" width="100%" alt="Example 2 trajectory">
+          </div>
+          <p style="text-align: justify; font-size: 0.95em;">
+            You are presented with a sequence of panoramic views that represent a navigation path from the starting point
+            to the goal location. Identify the correct instruction.
+          </p>
+          <div class="options global2-options">
+            <button onclick="checkAnswer('D','global2','A')" data-choice="A">
+              A. Go down the walkway between the bar and the floor cabinets. Make a left at the door leading to the bedroom.
+            </button>
+            <button onclick="checkAnswer('D','global2','B')" data-choice="B">
+              B. Take the stairs then head for the kitchen. Stop at the bottom of the stairs.
+            </button>
+            <button onclick="checkAnswer('D','global2','C')" data-choice="C">
+              C. Walk towards yellow chair and turn right, walk past couch and straight through doorway towards dining table,
+              walk on left side of dining table through double doors, walk over one doormat, stop on the second doormat.
+            </button>
+            <button onclick="checkAnswer('D','global2','D')" data-choice="D">
+              D. Walk outside of the patio doors. Go down the stairs to the grass area and then stop.
+            </button>
+            <button onclick="checkAnswer('D','global2','E')" data-choice="E">
+              E. Follow the pink carpet out of the room you are in, and through the next room. Exit the doorway of the next room and stop.
+            </button>
+          </div>
+          <p id="global2-feedback" class="feedback"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="examples">
+      <h3>Temporal Progress Estimation Examples</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 2em; justify-content: center;">
+        <!-- Example 3-1 -->
+        <div class="example" style="flex: 1 1 300px; max-width: 380px;">
+          <h4>Example 1</h4>
+          <div class="trajectory">
+            <img id="temporal1-img" src="assets/temporal1/frame1.png" width="100%" alt="Example 3-1 trajectory">
+          </div>
+          <p style="text-align: justify; font-size: 0.95em;">
+            You are given a navigation instruction divided into multiple sub-instructions, along with a trajectory. Your task is to determine how many sub-instructions have been completed based on the views provided. <br>
+            <strong></strong>
+          </p>
+          <div class="options temporal1-options">
+            <button onclick="checkAnswer('2','temporal1','1')" data-choice="1">Sub-instruction 1: turn to your left
+            </button>
+            <button onclick="checkAnswer('2','temporal1','2')" data-choice="2">Sub-instruction 2: exit the room out of the door beside the wooden drawer</button>
+            <button onclick="checkAnswer('2','temporal1','3')" data-choice="3">Sub-instruction 3: once out of the room walk across the small area and through the next entry way on the left</button>
+            <button onclick="checkAnswer('2','temporal1','4')" data-choice="4">Sub-instruction 4: stop inside the room before you get to the door lead outside</button>
+          </div>
+          <p id="temporal1-feedback" class="feedback"></p>
+        </div>
+    
+        <!-- Example 3-2 -->
+        <div class="example" style="flex: 1 1 300px; max-width: 380px;">
+          <h4>Example 2</h4>
+          <div class="trajectory">
+            <img id="temporal2-img" src="assets/temporal2/frame1.jpg" width="100%" alt="Example 3-2 trajectory">
+          </div>
+          <p style="text-align: justify; font-size: 0.95em;">
+            You are given a navigation instruction divided into multiple sub-instructions, along with a trajectory. Your task is to determine how many sub-instructions have been completed based on the views provided. <br>
+            <strong></strong>
+          </p>
+          <div class="options temporal2-options">
+            <button onclick="checkAnswer('4','temporal2','1')" data-choice="1">Sub-instruction 1: enter the room directly in front of the stair</button>
+            <button onclick="checkAnswer('4','temporal2','2')" data-choice="2">Sub-instruction 2: go into the closet</button>
+            <button onclick="checkAnswer('4','temporal2','3')" data-choice="3">Sub-instruction 3: continue into the bathroom</button>
+            <button onclick="checkAnswer('4','temporal2','4')" data-choice="4">Sub-instruction 4: stop in front of the sink</button>
+          </div>
+          <p id="temporal2-feedback" class="feedback"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="local-examples">
+      <h3>Local Observation-Action Reasoning Examples</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 2em; justify-content: center;">
+        <!-- Example 1 -->
+        <div class="local-example" style="flex: 1 1 300px; max-width: 380px;">
+          <h4>Example 1</h4>
+          <div class="local-question">
+            <b>Given the current view and a direction to move, select the location matching the expected view after moving.
+          </div>
+          <div class="local-row" style="display: flex; gap: 2em;">
+            <div style="flex:1; text-align:center;">
+              <img src="assets/local1/current.png" class="local-img" alt="Current View">
+              <div style="font-size: 0.85em; color: #888; margin-top: 0.2em;">Current View</div>
+            </div>
+            <div style="flex:1; text-align:center;">
+              <img src="assets/local1/direction.png" class="local-img" alt="Direction">
+              <div style="font-size: 0.85em; color: #888; margin-top: 0.2em;">Direction</div>
+            </div>
+          </div>
+          <div class="options local1-options" style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local1','A')" data-choice="A" style="background:none; border:none;">
+                <img src="assets/local1/A.png" alt="Option A" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">A</div>
+            </div>
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local1','B')" data-choice="B" style="background:none; border:none;">
+                <img src="assets/local1/B.png" alt="Option B" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">B</div>
+            </div>
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local1','C')" data-choice="C" style="background:none; border:none;">
+                <img src="assets/local1/C.png" alt="Option C" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">C</div>
+            </div>
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local1','D')" data-choice="D" style="background:none; border:none;">
+                <img src="assets/local1/D.png" alt="Option D" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">D</div>
+            </div>
+          </div>
+          <p id="local1-feedback" class="feedback"></p>
+        </div>
+
+        <!-- Example 2 -->
+        <div class="local-example" style="flex: 1 1 300px; max-width: 380px;">
+          <h4>Example 2</h4>
+          <div class="local-question">
+            <b>Given the current view and a target view., select the direction that is most likely to lead to the target view.
+          </div>
+          <div class="local-row" style="display: flex; gap: 2em;">
+            <div style="flex:1; text-align:center;">
+              <img src="assets/local2/current.png" class="local-img" alt="Current View">
+              <div style="font-size: 0.85em; color: #888; margin-top: 0.2em;">Current View</div>
+            </div>
+            <div style="flex:1; text-align:center;">
+              <img src="assets/local2/target.png" class="local-img" alt="Target View">
+              <div style="font-size: 0.85em; color: #888; margin-top: 0.2em;">Target View</div>
+            </div>
+          </div>
+          <div class="options local2-options" style="display: flex; justify-content: space-between; margin-top: 0.5em;">
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local2','A')" data-choice="A" style="background:none; border:none;">
+                <img src="assets/local2/A.png" alt="Option A" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">A</div>
+            </div>
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local2','B')" data-choice="B" style="background:none; border:none;">
+                <img src="assets/local2/B.png" alt="Option B" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">B</div>
+            </div>
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local2','C')" data-choice="C" style="background:none; border:none;">
+                <img src="assets/local2/C.png" alt="Option C" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">C</div>
+            </div>
+            <div style="text-align:center;">
+              <button onclick="checkAnswer('D','local2','D')" data-choice="D" style="background:none; border:none;">
+                <img src="assets/local2/D.png" alt="Option D" style="height:60px;">
+              </button>
+              <div style="font-size: 0.85em; color: #888;">D</div>
+            </div>
+          </div>
+          <p id="local2-feedback" class="feedback"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="realworld">
+      <h3>Real-world Embodied Navigation Pipeline</h3>
+      <img src="assets/real-pipeline.png" alt="Overview of the real-world embodied navigation pipeline" style="max-width: 100%; border: 1px solid #ccc; border-radius: 6px; margin-top: 1em;">
+      <p style="max-width: 900px; margin: 1em auto 0; padding: 0 1em; font-size: 1em; color: #444; text-align: center;">
+        Overview of the real-world embodied navigation pipeline, demonstrating how MLLMs can be integrated into physical navigation systems.
+      </p>
+    </section>
+
+    <section id="leaderboard">
+      <h3>Results</h3>
+      <img src="assets/result.jpg" alt="Leaderboard results" style="max-width: 100%; border: 1px solid #ccc; border-radius: 6px; margin-top: 1em;">
+      <p style="font-size: 0.9em; color: #555; text-align: center;">
+      </p>
+    </section>
+
+    <section class="bibtex">
+      <h3>BibTeX</h3>
+      <pre style="white-space: pre-wrap; text-align: justify;">
+
+@article{qiao2025navbench,
+  title={NavBench: Probing Multimodal Large Language Models for Embodied Navigation},
+  author={Qiao, Yanyuan and Hong, Haodong and Lyu, Wenqi and An, Dong and Zhang, Siqi and Xie, Yutong and Wang, Xinyu and Wu, Qi},
+  journal={arXiv preprint arXiv:XXXX.XXXXX},
+  year={2025}
+}
+      </pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 NavBench Project. All rights reserved.</p>
+  </footer>
+
+<script>
+  function checkAnswer(correct, prefix, selected) {
+    const feedback = document.getElementById(`${prefix}-feedback`);
+    const buttons = document.querySelectorAll(`.${prefix}-options button`);
+    buttons.forEach(btn => {
+      btn.classList.remove('correct', 'incorrect');
+      if (btn.dataset.choice === correct) {
+        btn.classList.add('correct');
+      } else if (btn.dataset.choice === selected) {
+        btn.classList.add('incorrect');
+      }
+    });
+    if (selected === correct) {
+      feedback.textContent = '✅ Correct!';
+      feedback.style.color = 'green';
+    } else {
+      feedback.textContent = `❌ Incorrect. The correct answer is ${correct}.`;
+      feedback.style.color = 'red';
+    }
+  }
+
+  function cycleImages(prefix, count) {
+    let index = 1;
+    let isPaused = false;
+    
+    const trajectory = document.querySelector(`#${prefix}-img`).parentElement;
+    const overlay = document.createElement('div');
+    overlay.className = 'end-overlay';
+    overlay.textContent = 'End';
+    trajectory.appendChild(overlay);
+    
+    function updateImage() {
+      const img = document.getElementById(`${prefix}-img`);
+      if (img) {
+        if (index > count) {
+          //
+          isPaused = true;
+          overlay.classList.add('show');
+          setTimeout(() => {
+            index = 1;
+            img.src = `assets/${prefix}/frame${index}.png`;
+            overlay.classList.remove('show');
+            isPaused = false;
+          }, 1000); // 
+        } else {
+          img.src = `assets/${prefix}/frame${index}.png`;
+          index++;
+        }
+      }
+    }
+
+    setInterval(() => {
+      if (!isPaused) {
+        updateImage();
+      }
+    }, 1500);
+  }
+
+  cycleImages('global1', 6);  // 
+  cycleImages('global2', 5);  // 
+  
+  cycleImages('temporal1', 3);  // 
+  cycleImages('temporal2', 6);  //
+</script>
+</body>
+</html>

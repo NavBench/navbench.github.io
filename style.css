@@ -1,0 +1,149 @@
+/* Reset + Base */
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.6;
+  background-color: #fdfdfd;
+  color: #222;
+  padding: 0;
+}
+
+a {
+  color: #007acc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Header */
+header {
+  background: #1a1a1a;
+  color: white;
+  padding: 1em;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2em;
+}
+
+nav {
+  margin-top: 0.5em;
+}
+
+nav a {
+  margin: 0 1em;
+  color: #ddd;
+  font-weight: bold;
+}
+
+/* Title Section */
+.title-section {
+  text-align: center;
+  padding: 2em 1em;
+}
+
+.title-section h2 {
+  font-size: 1.8em;
+  margin-bottom: 0.5em;
+}
+
+.title-section .authors {
+  font-size: 0.95em;
+  color: #555;
+  margin-bottom: 1em;
+}
+
+.links {
+  margin-top: 1em;
+}
+
+.button {
+  display: inline-block;
+  margin: 0.3em;
+  padding: 0.6em 1.2em;
+  background-color: #007acc;
+  color: white;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.button:hover {
+  background-color: #005fa3;
+}
+
+/* Sections */
+section {
+  max-width: 900px;
+  margin: auto;
+  padding: 2em 1em;
+}
+
+.teaser img {
+  max-width: 100%;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.bibtex pre {
+  background: #f4f4f4;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.9em;
+}
+
+.pipeline img {
+  max-width: 100%;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1.5em;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 2em;
+}
+
+.local-row {
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+  margin-bottom: 1em;
+}
+.local-img {
+  width: 120px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.local-example .options {
+  display: flex;
+  gap: 0.7em;
+  justify-content: center;
+}
+.local-example .options button {
+  padding: 0.4em;
+  border-radius: 7px;
+  background: #f8f8f8;
+  border: 1.5px solid #ccc;
+  cursor: pointer;
+  transition: background 0.25s, border 0.25s;
+}
+.local-example .options button.correct {
+  background: #d4edda;
+  border-color: #28a745;
+}
+.local-example .options button.incorrect {
+  background: #f8d7da;
+  border-color: #dc3545;
+}
+.local-example .options button:hover {
+  background: #eef;
+}
